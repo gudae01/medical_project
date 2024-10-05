@@ -2,11 +2,15 @@ package com.example.demo.service;
 
 import java.util.Date;
 import java.util.function.Function;
+
 import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
+
 import com.example.demo.model.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
@@ -37,9 +41,9 @@ public class JwtService {
         Date expiryDate = new Date(nowMillis + 86400000); // 1일
 
         return Jwts.builder()
-                .subject(user.getUsername())
-                .issuedAt(now)
-                .expiration(expiryDate)
+                .setSubject(user.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .claim("role", user.getRole())
                 .signWith(getSigningKey())  // 최신 메서드 사용
                 .compact();
@@ -55,9 +59,9 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        JwtParserBuilder parserBuilder = Jwts.parser()
-                .verifyWith(getSigningKey());
-        return parserBuilder.build().parseSignedClaims(token).getPayload();
+        JwtParserBuilder parserBuilder = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey());
+        return parserBuilder.build().parseClaimsJws(token).getBody();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
